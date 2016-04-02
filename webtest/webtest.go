@@ -10,6 +10,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -19,6 +20,18 @@ func TimeURL(url string) time.Duration {
 	return time.Since(start)
 }
 
+func Fetcher(url string, frequency uint32, c chan<- time.Duration) {
+	for {
+		c <- TimeURL(url)
+		time.Sleep(time.Duration(frequency) * time.Second)
+	}
+}
+
 func main() {
-	log.Print(TimeURL("http://shee.sh/"))
+	hostname, _ := os.Hostname()
+	c := make(chan time.Duration)
+	go Fetcher("http://shee.sh/", 10, c)
+	for {
+		log.Printf("%s %v", hostname, <-c)
+	}
 }
