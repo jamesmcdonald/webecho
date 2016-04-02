@@ -8,6 +8,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -30,7 +31,11 @@ type PollConfig struct {
 
 func TimeURL(url string) (int, time.Duration) {
 	start := time.Now()
-	response, _ := http.Get(url)
+	response, err := http.Get(url)
+	if err != nil {
+		log.Print(err)
+		return 999, 0
+	}
 	return response.StatusCode, time.Since(start)
 }
 
@@ -42,33 +47,50 @@ func Fetcher(url string, frequency int, c chan<- RequestInfo) {
 	}
 }
 
-func main() {
-
-	var urls []PollConfig
-	urlconfig := os.Getenv("URLS")
-	if urlconfig == "" {
-		log.Fatal("You need to set the URLS environment variable")
+func Logger(c <-chan RequestInfo) {
+	hostname, _ := os.Hostname()
+	for {
+		ri := <-c
+		log.Printf("%s %s %d %v", hostname, ri.url, ri.status, ri.duration)
 	}
-	for _, u := range strings.Split(urlconfig, ",") {
+}
+
+func ParseConfig(config string) ([]PollConfig, error) {
+	var urls []PollConfig
+
+	for _, u := range strings.Split(config, "::") {
 		parts := strings.Split(u, ";")
 		if len(parts) != 2 {
-			log.Fatal("Each URL must be in the format url;frequency. Eg http://shee.sh/;300")
+			return nil, fmt.Errorf("ParseConfig: config %q does not match <url>;<frequency> (eg http://shee.sh/;300)", u)
 		}
 		freq, err := strconv.Atoi(parts[1])
 		if err != nil {
-			log.Fatal("The frequency has to be an integer number of seconds")
+			return nil, fmt.Errorf("ParseConfig: frequency %q is not an integer", parts[1])
 		}
 		p := PollConfig{parts[0], freq}
 		urls = append(urls, p)
 	}
 
-	hostname, _ := os.Hostname()
+	return urls, nil
+}
+
+func main() {
+	urlconfig := os.Getenv("URLS")
+	if urlconfig == "" {
+		log.Fatal("You need to set the URLS environment variable")
+	}
+
+	urls, err := ParseConfig(urlconfig)
+	log.Print("Starting monitoring for %v", urls)
+	if err != nil {
+		log.Fatalf("Could not parse configuration %q: %s", urlconfig, err)
+	}
+
 	c := make(chan RequestInfo)
+
 	for _, url := range urls {
 		go Fetcher(url.url, url.frequency, c)
 	}
-	for {
-		ri := <-c
-		log.Printf("%s %s %d %v", hostname, ri.url, ri.status, ri.duration)
-	}
+
+	Logger(c)
 }
