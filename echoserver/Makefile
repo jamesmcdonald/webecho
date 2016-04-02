@@ -3,10 +3,10 @@ TAG_VERSION=1
 
 all: docker
 
-$(BINARY):
+$(BINARY): echoserver.go
 	go build
 
-docker: $(BINARY)
+docker: $(BINARY) Dockerfile
 	docker build -t eu.gcr.io/$(GCLOUD_PROJECT)/$(BINARY):$(TAG_VERSION) .
 
 rm:

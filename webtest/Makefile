@@ -1,12 +1,12 @@
 BINARY=webtest
-TAG_VERSION=1
+TAG_VERSION=2
 
 all: docker
 
-$(BINARY):
+$(BINARY): webtest.go
 	go build
 
-docker: $(BINARY)
+docker: $(BINARY) Dockerfile
 	docker build -t eu.gcr.io/$(GCLOUD_PROJECT)/$(BINARY):$(TAG_VERSION) .
 
 rm:
