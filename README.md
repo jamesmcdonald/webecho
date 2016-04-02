@@ -1,33 +1,49 @@
 # webecho
 An echo service and a client to test it. These are simple projects for playing with deploying containers on Google Container Engine.
 
-## How to set up
-Create a Google Cloud Platform project and note the project ID [PROJECT_ID]
+## Building and testing
+* If you haven't already, install the [Google Cloud SDK](https://cloud.google.com/sdk/) and run `gcloud init` to set it up.
 
-Build the go binary in this directory:
-    go get -d github.com/jamesmcdonald/webecho
-    go build github.com/jamesmcdonald/webecho
+* Create a Google Cloud Platform project and note the project ID. Stick it in `$GCLOUD_PROJECT` and configure gcloud to use it.
+```
+export GCLOUD_PROJECT=echo-service-12345
+gcloud config set project $GCLOUD_PROJECT
+```
 
-Build the docker image:
-    docker build -t eu.gcd.io/<PROJECT_ID>/echo-service
+Note: You can build containers and test them without creating a project, but you should set `$GCLOUD_PROJECT` to something because the Makefiles use it to tag the Docker images.
 
-At this point you can test locally with something like:
-    docker run -p 8080:8080 --rm eu.gcd.io/<PROJECT_ID>/echo-service
+* Run `make`. This will build the binaries and create Docker images.
 
-Push the docker image to Google:
-    gcloud docker push eu.gcd.io/<PROJECT_ID>/echo-service
+* At this point you can test locally with something like:
+```
+    docker run -p 8080:8080 --rm eu.gcd.io/$GCLOUD_PROJECT/echo-service
+```
 
-Choose a cluster name [CLUSTER_NAME]
+## Deploying to Google
+* Push the docker image to Google.
+```
+    gcloud docker push eu.gcd.io/$GCLOUD_PROJECT/echo-service
+```
 
-Set configuration and deploy the application:
-    gcloud config set project <PROJECT_ID>
-    gcloud container clusters create <CLUSTER_NAME> --num-nodes=1
-    gcloud container clusters get-credentials <CLUSTER_NAME>
+* Choose a cluster name. Set it as `$GCLOUD_CLUSTER`.
+```
+export GCLOUD_CLUSTER=echo-service
+```
+
+* Create a container cluster and get its credentials.
+```
+    gcloud container clusters create $GCLOUD_CLUSTER --num-nodes=1
+    gcloud container clusters get-credentials $GCLOUD_CLUSTER
+```
+
+* Install the Kubernetes management tool and fire up the containers. I call the deployment `echo-service` here. You can use something else if you prefer.
+```
     gcloud components install kubectl
-    kubectl run echo-service --image=eu.gcr.io/<PROJECT_ID>/echo-service --port 8080
+    kubectl run echo-service --image=eu.gcr.io/$GCLOUD_PROJECT/echo-service --port 8080
     kubectl expose deployment echo-service --type="LoadBalancer" --port 80 --target-port 8080
+```
 
-Check the services configuration until you see an external IP:
+* Check the services configuration until you see an external IP. Once you see it, you should be able to point a browser there.
+```
     kubectl get service echo-service
-
-
+```
