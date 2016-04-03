@@ -1,6 +1,10 @@
 # webecho
 An echo service and a client to test it. These are simple projects for playing with deploying containers on Google Container Engine.
 
+`echoserver` listens on port 8080 for HTTP requests, and replies with the URL path from the request.
+
+`webtest` takes a list of URLs and frequencies, polls the URLs based on those frequencies and puts the resulting status and response time in a MySQL database.
+
 ## Building and testing
 * If you haven't already, install the [Google Cloud SDK](https://cloud.google.com/sdk/) and run `gcloud init` to set it up.
 
