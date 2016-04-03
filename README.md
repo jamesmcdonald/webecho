@@ -6,8 +6,8 @@ An echo service and a client to test it. These are simple projects for playing w
 
 * Create a Google Cloud Platform project and note the project ID. Stick it in `$GCLOUD_PROJECT` and configure gcloud to use it.
 ```
-export GCLOUD_PROJECT=echo-service-12345
-gcloud config set project $GCLOUD_PROJECT
+    export GCLOUD_PROJECT=echo-service-12345
+    gcloud config set project $GCLOUD_PROJECT
 ```
 
 **Note: You can build containers and test them without creating a project, but you should set `$GCLOUD_PROJECT` to something because the Makefiles use it to tag the Docker images.**
@@ -31,7 +31,7 @@ gcloud config set project $GCLOUD_PROJECT
 
 * Choose a cluster name. Set it as `$GCLOUD_CLUSTER`.
 ```
-export GCLOUD_CLUSTER=echo-service
+    export GCLOUD_CLUSTER=echo-service
 ```
 
 * Create a container cluster and get its credentials.
@@ -107,5 +107,6 @@ This will start a cloud sql proxy with incorrect configuration, but it won't be 
                         --env MYSQL_USER=echostats \
                         --env MYSQL_DB=echostats \
                         --env MYSQL_PASSWORD=<mysql_password>
+```
 
 You should see entries start to appear in the MySQL database after a few seconds. The `hostname` will be the name of the Kubernetes pod available in `kubectl get pods`. You can scale up the deployment, or deploy it to other locations to compare the response times. Or deploy different configurations with different frequencies for different URLs!
