@@ -13,6 +13,6 @@ rm:
 	rm -f $(BINARY)
 
 rmi:
-	docker rmi eu.gcr.io/$(GCLOUD_PROJECT)/$(BINARY):1
+	docker rmi eu.gcr.io/$(GCLOUD_PROJECT)/$(BINARY):$(TAG_VERSION)
 
 clean: rm rmi
