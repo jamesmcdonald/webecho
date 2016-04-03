@@ -47,7 +47,7 @@ An echo service and a client to test it. These are simple projects for playing w
 * Install the Kubernetes management tool and fire up the containers. I call the deployment `echo-service` here. You can use something else if you prefer.
 ```
     gcloud components install kubectl
-    kubectl run echo-service --image=eu.gcr.io/$GCLOUD_PROJECT/echoserver --port 8080
+    kubectl run echo-service --image=eu.gcr.io/$GCLOUD_PROJECT/echoserver:1 --port 8080
     kubectl expose deployment echo-service --type="LoadBalancer" --port 80 --target-port 8080
 ```
 
@@ -58,7 +58,7 @@ An echo service and a client to test it. These are simple projects for playing w
 
 ## Deploying `webtest` to Google
 
-* Create a Cloud SQL instance. It must be a second generation instance to support the Cloud SQL proxy. Permit access for yourself to connect to the database.
+* Create a Cloud SQL instance. It must be a second generation instance to support the Cloud SQL proxy. Permit access for your own IP to connect to the database, and set the root password.
 
 * Connect to MySQL and create a database and user.
 ```
@@ -103,7 +103,7 @@ This will start a cloud sql proxy with incorrect configuration, but it won't be 
 
 * Create a deployment to run the container. To monitor the echoserver, use its URL in the URLS parameter. Change any parameters you need.
 ```
-    kubectl run webtest --image=eu.gcr.io/echo-service-1267/webtest:2 \
+    kubectl run webtest --image=eu.gcr.io/$GCLOUD_PROJECT/webtest:2 \
                         --env URLS="https://10.11.12.12;27::http://10.11.12.13/;99" \
                         --env GCLOUD_PROJECT=$GCLOUD_PROJECT \
                         --env GCLOUD_LOCATION=europe-west1 \
