@@ -16,13 +16,13 @@ Note: You can build containers and test them without creating a project, but you
 
 * At this point you can test locally with something like:
 ```
-    docker run -p 8080:8080 --rm eu.gcd.io/$GCLOUD_PROJECT/echo-service
+    docker run -p 8080:8080 --rm eu.gcr.io/$GCLOUD_PROJECT/echoserver
 ```
 
-## Deploying to Google
+## Deploying `echoserver` to Google
 * Push the docker image to Google.
 ```
-    gcloud docker push eu.gcd.io/$GCLOUD_PROJECT/echo-service
+    gcloud docker push eu.gcr.io/$GCLOUD_PROJECT/echoserver
 ```
 
 * Choose a cluster name. Set it as `$GCLOUD_CLUSTER`.
@@ -39,7 +39,7 @@ export GCLOUD_CLUSTER=echo-service
 * Install the Kubernetes management tool and fire up the containers. I call the deployment `echo-service` here. You can use something else if you prefer.
 ```
     gcloud components install kubectl
-    kubectl run echo-service --image=eu.gcr.io/$GCLOUD_PROJECT/echo-service --port 8080
+    kubectl run echo-service --image=eu.gcr.io/$GCLOUD_PROJECT/echoserver --port 8080
     kubectl expose deployment echo-service --type="LoadBalancer" --port 80 --target-port 8080
 ```
 
