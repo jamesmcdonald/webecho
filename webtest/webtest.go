@@ -2,7 +2,7 @@
  * webtest
  * James McDonald <james@jamesmcdonald.com>
  *
- * Periodically hit a URL and log the response time.
+ * Periodically hit URLs and log the status and response time.
  */
 
 package main
@@ -47,14 +47,6 @@ func Fetcher(url string, frequency int, c chan<- RequestInfo) {
 	}
 }
 
-func Logger(c <-chan RequestInfo) {
-	hostname, _ := os.Hostname()
-	for {
-		ri := <-c
-		log.Printf("%s %s %d %v", hostname, ri.url, ri.status, ri.duration)
-	}
-}
-
 func ParseConfig(config string) ([]PollConfig, error) {
 	var urls []PollConfig
 
@@ -81,7 +73,7 @@ func main() {
 	}
 
 	urls, err := ParseConfig(urlconfig)
-	log.Print("Starting monitoring for %v", urls)
+	log.Printf("Starting monitoring for %+v", urls)
 	if err != nil {
 		log.Fatalf("Could not parse configuration %q: %s", urlconfig, err)
 	}
