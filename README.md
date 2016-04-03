@@ -20,7 +20,7 @@ gcloud config set project $GCLOUD_PROJECT
 
 * At this point you can test locally with something like:
 ```
-    docker run -p 8080:8080 --rm eu.gcr.io/$GCLOUD_PROJECT/echoserver
+    docker run -p 8080:8080 --rm eu.gcr.io/$GCLOUD_PROJECT/echoserver:1
 ```
 
 ## Deploying `echoserver` to Google
@@ -54,8 +54,6 @@ export GCLOUD_CLUSTER=echo-service
 
 ## Deploying `webtest` to Google
 
-**Note: I'm still working on this bit**
-
 * Create a Cloud SQL instance. It must be a second generation instance to support the Cloud SQL proxy. Permit access for yourself to connect to the database.
 
 * Connect to MySQL and create a database and user.
@@ -76,3 +74,38 @@ export GCLOUD_CLUSTER=echo-service
         duration integer,
         primary key (timestamp, url, host)
     );
+```
+
+* Again, you can test locally with something like this.
+```
+    docker run -ti --rm --env URLS="http://10.11.12.13;300" \
+                        --env MYSQL_HOST=<sql_cloud_ip> \
+                        --env MYSQL_USER=echostats \
+                        --env MYSQL_PASSWORD=<mysql_password> \
+                        --env MYSQL_DB=echostats \
+                        eu.gcr.io/echo-service-1267/webtest:2
+```
+
+The `URLS` environment variable should be set to pairs of a URL and a frequency to test it in seconds. URLs should be separated by `::`. For example
+```
+    URLS="http://10.11.12.13/;300::http://10.11.12.14/;600"
+```
+This will start a cloud sql proxy with incorrect configuration, but it won't be used. You should see entries appear in the database with a `hostname` that matches the id of the running container.
+
+* Push the docker image to Google.
+```
+    gcloud docker push eu.gcr.io/$GCLOUD_PROJECT/webtest
+```
+
+* Create a deployment to run the container. To monitor the echoserver, use its URL in the URLS parameter. Change any parameters you need.
+```
+    kubectl run webtest --image=eu.gcr.io/echo-service-1267/webtest:2 \
+                        --env URLS="https://10.11.12.12;27::http://10.11.12.13/;99" \
+                        --env GCLOUD_PROJECT=$GCLOUD_PROJECT \
+                        --env GCLOUD_LOCATION=europe-west1 \
+                        --env GCLOUD_SQL=echostats \
+                        --env MYSQL_USER=echostats \
+                        --env MYSQL_DB=echostats \
+                        --env MYSQL_PASSWORD=<mysql_password>
+
+You should see entries start to appear in the MySQL database after a few seconds. The `hostname` will be the name of the Kubernetes pod available in `kubectl get pods`. You can scale up the deployment, or deploy it to other locations to compare the response times. Or deploy different configurations with different frequencies for different URLs!
