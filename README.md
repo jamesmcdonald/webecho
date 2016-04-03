@@ -10,7 +10,11 @@ export GCLOUD_PROJECT=echo-service-12345
 gcloud config set project $GCLOUD_PROJECT
 ```
 
-Note: You can build containers and test them without creating a project, but you should set `$GCLOUD_PROJECT` to something because the Makefiles use it to tag the Docker images.
+**Note: You can build containers and test them without creating a project, but you should set `$GCLOUD_PROJECT` to something because the Makefiles use it to tag the Docker images.**
+
+* The Docker build for `webtest` requires a file with service account credentials called `credentials.json`. Create a service account selecting JSON credentials. It should get 'editor' permissions by default, which is what is necessary. Copy the downloaded credentials file into `webtest/credentials.json`.
+
+**Note: These credentials give access to your Google Cloud project. Be careful where you put them and the generated Docker images that will contain them. There might be a smarter way to handle this but I haven't found it yet :D**
 
 * Run `make`. This will build the binaries and create Docker images.
 
@@ -47,3 +51,28 @@ export GCLOUD_CLUSTER=echo-service
 ```
     kubectl get service echo-service
 ```
+
+## Deploying `webtest` to Google
+
+**Note: I'm still working on this bit**
+
+* Create a Cloud SQL instance. It must be a second generation instance to support the Cloud SQL proxy. Permit access for yourself to connect to the database.
+
+* Connect to MySQL and create a database and user.
+```
+    mysql -u root -h <sql_cloud_ip> -p
+    create database echostats;
+    grant all privileges on echostats.* to echostats@'%' identified by '<mysql_password>';
+```
+
+* For this simple example there isn't any clever schema management, so just create the table too.
+```
+    use echostats;
+    create table echostats (
+        timestamp datetime,
+        url varchar(200),
+        host varchar(100),
+        status integer,
+        duration integer,
+        primary key (timestamp, url, host)
+    );
