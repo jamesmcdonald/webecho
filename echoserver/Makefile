@@ -4,6 +4,7 @@ TAG_VERSION=1
 all: docker
 
 $(BINARY): echoserver.go
+	go get
 	go build
 
 docker: $(BINARY) Dockerfile

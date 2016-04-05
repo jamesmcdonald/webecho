@@ -4,6 +4,7 @@ TAG_VERSION=2
 all: docker
 
 $(BINARY): webtest.go
+	go get
 	go build
 
 docker: $(BINARY) Dockerfile
